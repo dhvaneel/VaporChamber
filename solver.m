@@ -34,11 +34,11 @@ function [Poptim] = solver(Lx,Ly,DPH_vec,seg_vec,q,plot,verbose)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % water properties
-    rho = 997; % kg/m^3, density of water at 100C;
-    hfg = 2264705; % J/kg latent heat of water
+    rho = 997; % [kg/m^3], density of water at 100C;
+    hfg = 2264705; % [J/kg], latent heat of water
     
     % heating parameters 
-    Q = q*Lx*Ly; % W, total heat input
+    Q = q*Lx*Ly; % [W], total heat input
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % problem setup
@@ -61,7 +61,8 @@ function [Poptim] = solver(Lx,Ly,DPH_vec,seg_vec,q,plot,verbose)
     n_seg = round(seg_len./p_vec); % num node
     
     % segment with largest pitch
-    p_max = max(p_vec); 
+    p_max = min(p_vec); 
+%     p_max = 5e-5;
     
     % num nodes in wick with largest pitch segment
     n_max = round(Lx./p_max); 
@@ -91,7 +92,7 @@ function [Poptim] = solver(Lx,Ly,DPH_vec,seg_vec,q,plot,verbose)
     qn = Q/(nx*ny); % [W/node]
     
     Pinit = 0; % [Pa]
-    P = zeros(n,n); % [Pa]
+    P = zeros(ny,nx); % [Pa]
     for j = 1:ny
         for i = 1:nx
             P(j,i) = 0.01*(Pinit-1-2*(i-1)*(j-1));
@@ -109,11 +110,11 @@ function [Poptim] = solver(Lx,Ly,DPH_vec,seg_vec,q,plot,verbose)
 
     if verbose
         iter = 'iter';
+        fprintf("Solving system of non-linear equations:\n");
     else
         iter = 'off';
     end
 
-    fprintf("Solving system of non-linear equations:\n");
     options = optimset('Display',iter,'TolFun',1e-12,'TolX',1e-12, ...
                        'MaxIter',1e6,'MaxFunEvals',1e6,'UseParallel',false);
     f = @(x)optimizer(x,nx,ny,qn,scale_grid,DPH_grid);

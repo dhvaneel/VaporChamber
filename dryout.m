@@ -22,7 +22,8 @@ function [q_dryout] = dryout(Lx,Ly,DPH_vec,seg_vec)
     n_seg = round(seg_len./p_vec); % num node
     
     % segment with largest pitch
-    p_max = max(p_vec); 
+    p_max = min(p_vec); 
+%     p_max = 5e-5;
     
     % num nodes in wick with largest pitch segment
     n_max = round(Lx./p_max); 
@@ -41,7 +42,7 @@ function [q_dryout] = dryout(Lx,Ly,DPH_vec,seg_vec)
         P_dryout = Pcap_vec_15(DPH_num);
     
         % newton raphson method
-        eps = 1e-1;
+        eps = 1e-2;
         q = 1e6;
         step = 1e6;
         h = 1e2;
@@ -68,6 +69,6 @@ function [q_dryout] = dryout(Lx,Ly,DPH_vec,seg_vec)
         n_cum = n_cum + n;
     end
     
-    disp(q_dryout);
+    %disp(q_dryout);
 
 end
