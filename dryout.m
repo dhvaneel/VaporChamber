@@ -2,7 +2,7 @@ function [q_dryout] = dryout(Lx,Ly,DPH_vec,seg_vec)
 
     global DPH_Key Pgrad_Key Prel_Key Uavg_all CA_all Aavg_all ...
            TFarea_all K p_k p_a Pcap_vec_15;
-
+    
     % solver settings
     plot = false;
     verbose = false;
@@ -19,18 +19,19 @@ function [q_dryout] = dryout(Lx,Ly,DPH_vec,seg_vec)
     
     % segmented region
     seg_len = Lx.*seg_vec; % [m], length
-    n_seg = round(seg_len./p_vec); % num node
+    n_seg = floor(seg_len./p_vec); % num node
+    seg_len = n_seg.*p_vec; % updated
     
     % segment with largest pitch
-    p_max = min(p_vec); 
-%     p_max = 5e-5;
+    p_min = min(p_vec); 
     
     % num nodes in wick with largest pitch segment
-    n_max = round(Lx./p_max); 
+    L = sum(seg_len);
+    n_max = floor(L./p_min); 
     
     % scale all segments wrt max pitch segment
-    scale = p_vec/p_max;
-    n_scale = round(n_seg.*scale); % effective num nodes
+    scale = p_vec/p_min;
+    n_scale = floor(n_seg.*scale); % effective num nodes
     
     q_dryout = 1e10; % random initialization
     n_cum = 0;
@@ -46,7 +47,8 @@ function [q_dryout] = dryout(Lx,Ly,DPH_vec,seg_vec)
         q = 1e6;
         step = 1e6;
         h = 1e2;
-        while abs(step) > eps
+        f1 = 1e6;
+        while abs(f1) > eps
             Poptim_1 = solver(Lx,Ly,DPH_vec,seg_vec,q,plot,verbose);
             Pseg_1 = abs(triu(Poptim_1)); % assuming Lx = Ly symmetry
             Pseg_1 = Pseg_1(n_cum+1:n_cum+n,:);

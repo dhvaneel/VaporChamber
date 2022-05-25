@@ -1,4 +1,4 @@
-function [r] = resistance(Lx,Ly,DPH_vec,seg_vec,P)
+function [req] = resistance(Lx,Ly,DPH_vec,seg_vec,P)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Inputs
@@ -9,7 +9,7 @@ function [r] = resistance(Lx,Ly,DPH_vec,seg_vec,P)
     % @ P = pressure profile [Pa]
     % 
     % Output
-    % @ r = resistance grid [K/W]
+    % @ req = equivalent resistance [K/W]
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     global DPH_Key;
@@ -26,17 +26,19 @@ function [r] = resistance(Lx,Ly,DPH_vec,seg_vec,P)
     
     % segmented region
     seg_len = Lx.*seg_vec; % [m], length
-    n_seg = round(seg_len./p_vec); % num node
+    n_seg = floor(seg_len./p_vec); % num node
+    seg_len = n_seg.*p_vec; % updated
     
     % segment with largest pitch
     p_max = min(p_vec); 
     
     % num nodes in wick with largest pitch segment
-    n_max = round(Lx./p_max); 
+    L = sum(seg_len);
+    n_max = floor(L./p_max); 
     
     % scale all segments wrt max pitch segment
     scale = p_vec/p_max;
-    n_scale = round(n_seg.*scale); % effective num nodes
+    n_scale = floor(n_seg.*scale); % effective num nodes
     
     % scaling factor grid
     n_cum = 0;
@@ -92,4 +94,5 @@ function [r] = resistance(Lx,Ly,DPH_vec,seg_vec,P)
     
     % equivalent resistance grid
     r = ((rpin+rtf+rint).^-1+(rwater+rwaterint).^-1).^-1;
+    req = sum(1./r,'all')^(-1);
 end

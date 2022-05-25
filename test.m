@@ -20,7 +20,7 @@ load '10D50H_gradedData.mat' DPH_Key Pgrad_Key Prel_Key Uavg_all CA_all ...
 Lx = 0.5e-3;
 Ly = 0.5e-3;
 DPH_vec = [8, 7, 6, 5, 4, 3, 2, 1];
-seg_vec = [0, 0, 1.0, 0, 0, 0, 0, 0];
+seg_vec = [0 0 0 0 0 0 0 1];
 q2 = dryout(Lx,Ly,DPH_vec,seg_vec);
 P = solver(Lx,Ly,DPH_vec,seg_vec,q2,false,false);
 r = resistance(Lx,Ly,DPH_vec,seg_vec,P);

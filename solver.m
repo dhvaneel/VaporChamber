@@ -43,8 +43,7 @@ function [Poptim] = solver(Lx,Ly,DPH_vec,seg_vec,q,plot,verbose)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % problem setup
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    assert(sum(seg_vec)==1, 'Segment length proportions incorrect!')
+    
     
     % non-zero hybrid segment configuration
     ind = find(seg_vec > 0);
@@ -58,18 +57,19 @@ function [Poptim] = solver(Lx,Ly,DPH_vec,seg_vec,q,plot,verbose)
     
     % segmented region
     seg_len = Lx.*seg_vec; % [m], length
-    n_seg = round(seg_len./p_vec); % num node
+    n_seg = floor(seg_len./p_vec); % num node
+    seg_len = n_seg.*p_vec; % updated
     
     % segment with largest pitch
-    p_max = min(p_vec); 
-%     p_max = 5e-5;
+    p_min = min(p_vec); 
     
     % num nodes in wick with largest pitch segment
-    n_max = round(Lx./p_max); 
+    L = sum(seg_len);
+    n_max = floor(L./p_min); 
     
     % scale all segments wrt max pitch segment
-    scale = p_vec/p_max;
-    n_scale = round(n_seg.*scale); % effective num nodes
+    scale = p_vec/p_min;
+    n_scale = floor(n_seg.*scale); % effective num nodes
     
     % scaling factor grid
     n_cum = 0;
@@ -106,9 +106,9 @@ function [Poptim] = solver(Lx,Ly,DPH_vec,seg_vec,q,plot,verbose)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % solving non-linear equations 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    tic
 
     if verbose
+        tic
         iter = 'iter';
         fprintf("Solving system of non-linear equations:\n");
     else
@@ -120,7 +120,9 @@ function [Poptim] = solver(Lx,Ly,DPH_vec,seg_vec,q,plot,verbose)
     f = @(x)optimizer(x,nx,ny,qn,scale_grid,DPH_grid);
     [x,fval,exitflag,output] = fsolve(f,x0,options);
     
-    toc
+    if verbose
+        toc
+    end
     
     Poptim_flattened = x(1:(ny*nx));
     Poptim = reshape(Poptim_flattened,[ny,nx]);
