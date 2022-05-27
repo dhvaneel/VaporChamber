@@ -15,30 +15,36 @@ function [req] = resistance(Lx,Ly,DPH_vec,seg_vec,P)
     global DPH_Key;
 
     % non-zero hybrid segment configuration
-    ind = find(seg_vec > 0);
+    p_vec = DPH_Key(DPH_vec, 2)'; % [m], pitch
+    p_max = max(p_vec);
+    scale = p_vec./p_max;
+
+    seg_len = Lx.*seg_vec; % [m], length
+    n_seg = floor(seg_len./p_vec); % num node
+    n_scale = floor(n_seg.*scale); % effective num nodes
+
+    ind = find(n_scale > 1);
     DPH_vec = DPH_vec(ind);
     seg_vec = seg_vec(ind);
-    
+
     % segment micropillar geometry
     d_vec = DPH_Key(DPH_vec, 1)'; % [m], diameter
     p_vec = DPH_Key(DPH_vec, 2)'; % [m], pitch
     h_vec = DPH_Key(DPH_vec, 3)'; % [m], height
-    
+
     % segmented region
     seg_len = Lx.*seg_vec; % [m], length
     n_seg = floor(seg_len./p_vec); % num node
     seg_len = n_seg.*p_vec; % updated
     
-    % segment with largest pitch
-    p_max = min(p_vec); 
     
-    % num nodes in wick with largest pitch segment
-    L = sum(seg_len);
-    n_max = floor(L./p_max); 
+    % segment with largest pitch
+    p_max = max(p_vec); 
     
     % scale all segments wrt max pitch segment
     scale = p_vec/p_max;
     n_scale = floor(n_seg.*scale); % effective num nodes
+    n_max = sum(n_scale);
     
     % scaling factor grid
     n_cum = 0;
